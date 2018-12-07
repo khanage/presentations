@@ -1,0 +1,138 @@
+#+Title: What's the deal with Scala
+#+Author: Khan
+#+REVEAL_ROOT: https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/
+#+REVEAL_EXTRA_CSS: ./scalaForSeniors.css
+#+OPTIONS: num:nil toc:nil reveal_history:t
+#+OPTIONS: reveal_title_slide:"<h1>%t</h1>"
+#+REVEAL_HLEVEL: 1
+#+REVEAL_TRANS: Slide
+#+REVEAL_THEME: Blood
+
+* Scala for senior engineers
+- What makes it different
+- How is it the same
+#+BEGIN_NOTES
+So the purpose of this talk is to give a pretty high level overview of scala as a language.
+
+I'm going to assume everyone here is fairly familiar with C#/Java, with which scala has a sort of genetic relationship. By genetic relationship, I mean that scala has been heavily influenced
+by these languages, and a lot of the muscle memory you pick up from them will work just as well in scala. There are a few additional things that are worth mentioning, which I'll get to shortly.
+
+The point of this isn't really to introduce functional programming, or to teach anybody about monads or applicative functors, but rather just 
+a quick chat about the features that scala brings to the table. Feel free to interupt me with questions as we go, I haven't given this talk before, so I won't have covered everything, so any points
+you'd like to make or questions you have I'd appreciate hearing them.
+
+I hope by the end of this rant you'll have a better appreciation for why one should bother with scala in the first place.
+#+END_NOTES
+* Unique features
+- Implicits
+#+BEGIN_SRC scala
+def doTheThing(a: Int, b: Int)(implicit logger: Logger): Int {
+  logger.debug(s"Adding $a + $b")
+  a + b
+}
+#+END_SRC
+- Higher kinded types/type constructors
+#+BEGIN_SRC scala
+trait Logger[F[_]] {
+  def log(message: String): F[Unit]  
+}
+def doAnotherThing[F[_]](arg: String)(implicit logger: Logger[F]): String
+#+END_SRC
+- Closed hierarchies
+#+BEGIN_NOTES
+I'm by no means an expert scala user, but I have been writing some scala recently, and there are three things that I think make scala unique. I'll go into more details each of these
+so this is just an overview.
+
+The first thing you'll encounter in scala are implicits, where the compiler will find a value in scope for you, and fail compilation if one isn't there.
+
+There are also what are known as higher kinded types. These are just generics from c#/java, but in scala you can use them as parameters.
+
+The final thing is that in scala, you can have classes that can no longer be inherited from, outside of the scope of the file they exist in. This is also known as an algebraic data type, or sometimes
+you'll see it refered to as just an algebra. 
+#+END_NOTES
+* Implicits
+- Scala compiler searches for values in scope for you
+- This is the backbone of scala abstraction
+- Implements everything from dependency injection to generic programming to monads
+#+BEGIN_SRC scala
+// See Ma, no IoC framework needed
+def main() {
+  implicit val logger: Logger[IO] = Logger.makeIOLogger()
+  run[IO]
+}
+def run[F[_]]()(implicit val logger: Logger[F]): F[Int] { ??? }
+#+END_SRC
+#+BEGIN_NOTES
+Implicits are the feature of scala that sets it apart from other languages. 
+
+In most languages, you will pass all your values in manually, which pushes us toward having dependency injection at a class level where we pass all our dependencies in via a constructors.
+
+In scala, the compiler will search for a value in scope and if it doesn't find it it will fail to compile. This is useful when you want to talk about an implementation of a trait (what scala calls it's 
+interfaces) that can be passed in to a method.
+#+END_NOTES
+** Implicits for extension
+#+BEGIN_SRC scala
+def findSmallest[A](items: NonEmptyList[A])(implicit ordering: Ord[A]): A
+#+END_SRC
+#+BEGIN_NOTES
+So here we have an example of implicits being used to provide generic programming, where we have an implicit "witness" that whatever `A` we pass in has some kind of ordering defined.
+As this is generic, it could numerical, or string based, or perhaps some kind of priority for database connections.
+
+This is a kind of post-hoc extension, which is equivalent to being able to implement interfaces for classes that you don't control. So perhaps there's a new abstraction you want to play with;
+or a new database framework that can persist values if they implement a particular interface; or someone forgot to implement an ordering for their fancy numbers library; you can now 
+implement all those without having to change the original class.
+
+In haskell, this kind of post hoc extension has meant that all sorts of libraries and ways of putting programs together have gradually emerged out of a lot of galaxy-brain level 
+engineers trying to write better code.
+
+Scala takes a similar approach, but it also has it's instances as first class values, which I think is pretty neat. Having them as first class values means that you can instantiate the particular
+instance you want, and it means that you can mouse over the implicit in an idea and see what it's being resolved to.
+#+END_NOTES
+* Higher kinded types
+- You can talk about generic types without having all their parameters applied, eg. ~F[_]~ instead of ~F[Int]~ 
+#+BEGIN_SRC scala
+trait Applicative[F[_]] {
+  def point[A](a: A): F[A]
+  def apply[A, B](applicative: F[A], mappingFunction: F[A => B]): F[B]
+}
+// This works for any applicative and doesn't erase it's type
+def apply3[F[_], A, B, C, D]
+  (a: F[A], b: F[B], c: F[C], mappingFunction: F[A => B => C => D])
+  (implicit applicative: Applicative[F]): F[D] =
+    applicative.ap(applicative.ap(applicative.ap(mappingFunction)(a))(b))(c)
+#+END_SRC
+#+BEGIN_NOTES
+While implicits are definitely the defining feature of scala, higher kinded types are what allow functional programming of the haskell strongly typed variety.
+
+This means that you can write some very general abstractions, and a wealth of functionality falls out, in the same way that generic programming lets us write 
+methods for all lists/enumerables, we can write code about all things that are parameterised by another type. Things like `Select` from C# are a good example of this,
+where you can use the `linq` syntax for not just collections, but any type that implements a special method. This is achieved by some compiler trickery.
+
+In scala this is first class. It means that we don't have to cast things down to an interface and cast them back when we're done.
+#+END_NOTES
+* Closed hierarchies
+- This means that you can have just a set number of implementations of a type
+#+BEGIN_SRC scala
+sealed trait IncomingMessage { val id: Int }
+final case class FirstMessageOption(id: Int, body: String, timestamp: UTCTime) 
+  extends IncomingMessage
+final case class AnotherMessageOption(id: Int, body: StructuredData)
+  extends IncomingMessage
+
+def processMessage(incomingMessage: IncomingMessage)(implicit logger: Logger) = {
+  logger.debug(s"Got a message with id: ${incomingMessage.id}")
+
+  incomingMessage match {
+    case FirstMessageOption(id, body, timestamp) => ???
+    case AnotherMessageOption(id, body) => ???
+  }
+}
+#+END_SRC
+#+BEGIN_NOTES
+In this example we're taking advantage of pattern matching, which scala will check that we've covered all cases for. 
+
+The case class statement is just a way of creating a class which has a few default things implemented, like structural comparison instead of comparison by reference.
+
+The arguments to the class constructor are all values available on the class, and the `id` argument satisfies the requirements for ~id~ on ~IncomingMessage~.
+#+END_NOTES
+* Questions

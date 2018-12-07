@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>What's the deal with Scala</title>
+<meta name="author" content="(Khan)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/css/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/css/theme/Blood.css" id="theme"/>
+
+<link rel="stylesheet" href="./scalaForSeniors.css"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1>What's the deal with Scala</h1>
+</section>
+
+<section>
+<section id="slide-org6b6f334">
+<h2 id="org6b6f334">Scala for senior engineers</h2>
+<ul>
+<li>What makes it different</li>
+<li>How is it the same</li>
+
+</ul>
+<aside class="notes">
+<p>
+So the purpose of this talk is to give a pretty high level overview of scala as a language.
+</p>
+
+<p>
+I'm going to assume everyone here is fairly familiar with C#/Java, with which scala has a sort of genetic relationship. By genetic relationship, I mean that scala has been heavily influenced
+by these languages, and a lot of the muscle memory you pick up from them will work just as well in scala. There are a few additional things that are worth mentioning, which I'll get to shortly.
+</p>
+
+<p>
+The point of this isn't really to introduce functional programming, or to teach anybody about monads or applicative functors, but rather just 
+a quick chat about the features that scala brings to the table. Feel free to interupt me with questions as we go, I haven't given this talk before, so I won't have covered everything, so any points
+you'd like to make or questions you have I'd appreciate hearing them.
+</p>
+
+<p>
+I hope by the end of this rant you'll have a better appreciation for why one should bother with scala in the first place.
+</p>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgfc8f9d3">
+<h2 id="orgfc8f9d3">Unique features</h2>
+<ul>
+<li>Implicits</li>
+
+</ul>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">doTheThing</span><span style="color: #4f97d7;">(</span>a<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Int</span>, b<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Int</span><span style="color: #4f97d7;">)(</span><span style="color: #4f97d7;">implicit</span> logger<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Logger</span><span style="color: #4f97d7;">)</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Int</span> <span style="color: #4f97d7;">{</span>
+  logger.debug<span style="color: #bc6ec5;">(</span>s<span style="color: #2d9574;">"Adding </span><span style="color: #7590db;">$a</span><span style="color: #2d9574;"> + </span><span style="color: #7590db;">$b</span><span style="color: #2d9574;">"</span><span style="color: #bc6ec5;">)</span>
+  a + b
+<span style="color: #4f97d7;">}</span>
+</pre>
+</div>
+<ul>
+<li>Higher kinded types/type constructors</li>
+
+</ul>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><span style="color: #4f97d7; font-weight: bold;">trait</span> <span style="color: #ce537a; font-weight: bold;">Logger</span><span style="color: #4f97d7;">[</span><span style="color: #a45bad;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #4f97d7; font-weight: bold;">_</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">]</span> <span style="color: #4f97d7;">{</span>
+  <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">log</span><span style="color: #bc6ec5;">(</span>message<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">String</span><span style="color: #bc6ec5;">)</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">Unit</span><span style="color: #bc6ec5;">]</span>  
+<span style="color: #4f97d7;">}</span>
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">doAnotherThing</span><span style="color: #4f97d7;">[</span><span style="color: #a45bad;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #4f97d7; font-weight: bold;">_</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">](</span>arg<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">String</span><span style="color: #4f97d7;">)(</span><span style="color: #4f97d7;">implicit</span> logger<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Logger</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">F</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">String</span>
+</pre>
+</div>
+<ul>
+<li>Closed hierarchies</li>
+
+</ul>
+<aside class="notes">
+<p>
+I'm by no means an expert scala user, but I have been writing some scala recently, and there are three things that I think make scala unique. I'll go into more details each of these
+so this is just an overview.
+</p>
+
+<p>
+The first thing you'll encounter in scala are implicits, where the compiler will find a value in scope for you, and fail compilation if one isn't there.
+</p>
+
+<p>
+There are also what are known as higher kinded types. These are just generics from c#/java, but in scala you can use them as parameters.
+</p>
+
+<p>
+The final thing is that in scala, you can have classes that can no longer be inherited from, outside of the scope of the file they exist in. This is also known as an algebraic data type, or sometimes
+you'll see it refered to as just an algebra. 
+</p>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orge61aebe">
+<h2 id="orge61aebe">Implicits</h2>
+<ul>
+<li>Scala compiler searches for values in scope for you</li>
+<li>This is the backbone of scala abstraction</li>
+<li>Implements everything from dependency injection to generic programming to monads</li>
+
+</ul>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><span style="color: #2aa1ae; background-color: #292e34;">// </span><span style="color: #2aa1ae; background-color: #292e34;">See Ma, no IoC framework needed</span>
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">main</span><span style="color: #4f97d7;">()</span> <span style="color: #4f97d7;">{</span>
+  <span style="color: #4f97d7;">implicit</span> <span style="color: #4f97d7; font-weight: bold;">val</span> <span style="color: #7590db;">logger</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Logger</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">IO</span><span style="color: #bc6ec5;">]</span> <span style="color: #4f97d7; font-weight: bold;">=</span> <span style="color: #a45bad;">Logger</span>.makeIOLogger<span style="color: #bc6ec5;">()</span>
+  run<span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">IO</span><span style="color: #bc6ec5;">]</span>
+<span style="color: #4f97d7;">}</span>
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">run</span><span style="color: #4f97d7;">[</span><span style="color: #a45bad;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #4f97d7; font-weight: bold;">_</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">]()(</span><span style="color: #4f97d7;">implicit</span> <span style="color: #4f97d7; font-weight: bold;">val</span> <span style="color: #7590db;">logger</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Logger</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">F</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #4f97d7;">[</span><span style="color: #a45bad;">Int</span><span style="color: #4f97d7;">]</span> <span style="color: #4f97d7;">{</span> ??? <span style="color: #4f97d7;">}</span>
+</pre>
+</div>
+<aside class="notes">
+<p>
+Implicits are the feature of scala that sets it apart from other languages. 
+</p>
+
+<p>
+In most languages, you will pass all your values in manually, which pushes us toward having dependency injection at a class level where we pass all our dependencies in via a constructors.
+</p>
+
+<p>
+In scala, the compiler will search for a value in scope and if it doesn't find it it will fail to compile. This is useful when you want to talk about an implementation of a trait (what scala calls it's 
+interfaces) that can be passed in to a method.
+</p>
+
+</aside>
+</section>
+<section id="slide-orgd1f3333">
+<h3 id="orgd1f3333">Implicits for extension</h3>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">findSmallest</span><span style="color: #4f97d7;">[</span><span style="color: #a45bad;">A</span><span style="color: #4f97d7;">](</span>items<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">NonEmptyList</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">A</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)(</span><span style="color: #4f97d7;">implicit</span> ordering<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Ord</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">A</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">A</span>
+</pre>
+</div>
+<aside class="notes">
+<p>
+So here we have an example of implicits being used to provide generic programming, where we have an implicit "witness" that whatever `A` we pass in has some kind of ordering defined.
+As this is generic, it could numerical, or string based, or perhaps some kind of priority for database connections.
+</p>
+
+<p>
+This is a kind of post-hoc extension, which is equivalent to being able to implement interfaces for classes that you don't control. So perhaps there's a new abstraction you want to play with;
+or a new database framework that can persist values if they implement a particular interface; or someone forgot to implement an ordering for their fancy numbers library; you can now 
+implement all those without having to change the original class.
+</p>
+
+<p>
+In haskell, this kind of post hoc extension has meant that all sorts of libraries and ways of putting programs together have gradually emerged out of a lot of galaxy-brain level 
+engineers trying to write better code.
+</p>
+
+<p>
+Scala takes a similar approach, but it also has it's instances as first class values, which I think is pretty neat. Having them as first class values means that you can instantiate the particular
+instance you want, and it means that you can mouse over the implicit in an idea and see what it's being resolved to.
+</p>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org00dc319">
+<h2 id="org00dc319">Higher kinded types</h2>
+<ul>
+<li>You can talk about generic types without having all their parameters applied, eg. <code>F[_]</code> instead of <code>F[Int]</code></li>
+
+</ul>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><span style="color: #4f97d7; font-weight: bold;">trait</span> <span style="color: #ce537a; font-weight: bold;">Applicative</span><span style="color: #4f97d7;">[</span><span style="color: #a45bad;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #4f97d7; font-weight: bold;">_</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">]</span> <span style="color: #4f97d7;">{</span>
+  <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">point</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">A</span><span style="color: #bc6ec5;">](</span>a<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">A</span><span style="color: #bc6ec5;">)</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">A</span><span style="color: #bc6ec5;">]</span>
+  <span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">apply</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">A</span>, <span style="color: #a45bad;">B</span><span style="color: #bc6ec5;">](</span>applicative<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #2d9574;">[</span><span style="color: #a45bad;">A</span><span style="color: #2d9574;">]</span>, mappingFunction<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #2d9574;">[</span><span style="color: #a45bad;">A</span> <span style="color: #4f97d7; font-weight: bold;">=&gt;</span> <span style="color: #a45bad;">B</span><span style="color: #2d9574;">]</span><span style="color: #bc6ec5;">)</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">B</span><span style="color: #bc6ec5;">]</span>
+<span style="color: #4f97d7;">}</span>
+<span style="color: #2aa1ae; background-color: #292e34;">// </span><span style="color: #2aa1ae; background-color: #292e34;">This works for any applicative and doesn't erase it's type</span>
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">apply3</span><span style="color: #4f97d7;">[</span><span style="color: #a45bad;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #4f97d7; font-weight: bold;">_</span><span style="color: #bc6ec5;">]</span>, <span style="color: #a45bad;">A</span>, <span style="color: #a45bad;">B</span>, <span style="color: #a45bad;">C</span>, <span style="color: #a45bad;">D</span><span style="color: #4f97d7;">]</span>
+  <span style="color: #4f97d7;">(</span>a<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">A</span><span style="color: #bc6ec5;">]</span>, b<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">B</span><span style="color: #bc6ec5;">]</span>, c<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">C</span><span style="color: #bc6ec5;">]</span>, mappingFunction<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">A</span> <span style="color: #4f97d7; font-weight: bold;">=&gt;</span> <span style="color: #a45bad;">B</span> <span style="color: #4f97d7; font-weight: bold;">=&gt;</span> <span style="color: #a45bad;">C</span> <span style="color: #4f97d7; font-weight: bold;">=&gt;</span> <span style="color: #a45bad;">D</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)</span>
+  <span style="color: #4f97d7;">(</span><span style="color: #4f97d7;">implicit</span> applicative<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Applicative</span><span style="color: #bc6ec5;">[</span><span style="color: #a45bad;">F</span><span style="color: #bc6ec5;">]</span><span style="color: #4f97d7;">)</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">F</span><span style="color: #4f97d7;">[</span><span style="color: #a45bad;">D</span><span style="color: #4f97d7;">]</span> <span style="color: #4f97d7; font-weight: bold;">=</span>
+    applicative.ap<span style="color: #4f97d7;">(</span>applicative.ap<span style="color: #bc6ec5;">(</span>applicative.ap<span style="color: #2d9574;">(</span>mappingFunction<span style="color: #2d9574;">)(</span>a<span style="color: #2d9574;">)</span><span style="color: #bc6ec5;">)(</span>b<span style="color: #bc6ec5;">)</span><span style="color: #4f97d7;">)(</span>c<span style="color: #4f97d7;">)</span>
+</pre>
+</div>
+<aside class="notes">
+<p>
+While implicits are definitely the defining feature of scala, higher kinded types are what allow functional programming of the haskell strongly typed variety.
+</p>
+
+<p>
+This means that you can write some very general abstractions, and a wealth of functionality falls out, in the same way that generic programming lets us write 
+methods for all lists/enumerables, we can write code about all things that are parameterised by another type. Things like `Select` from C# are a good example of this,
+where you can use the `linq` syntax for not just collections, but any type that implements a special method. This is achieved by some compiler trickery.
+</p>
+
+<p>
+In scala this is first class. It means that we don't have to cast things down to an interface and cast them back when we're done.
+</p>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org98488eb">
+<h2 id="org98488eb">Closed hierarchies</h2>
+<ul>
+<li>This means that you can have just a set number of implementations of a type</li>
+
+</ul>
+<div class="org-src-container">
+
+<pre  class="src src-scala"><span style="color: #4f97d7;">sealed</span> <span style="color: #4f97d7; font-weight: bold;">trait</span> <span style="color: #ce537a; font-weight: bold;">IncomingMessage</span> <span style="color: #4f97d7;">{</span> <span style="color: #4f97d7; font-weight: bold;">val</span> <span style="color: #7590db;">id</span><span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Int</span> <span style="color: #4f97d7;">}</span>
+<span style="color: #4f97d7;">final</span> <span style="color: #4f97d7; font-weight: bold;">case</span> <span style="color: #4f97d7; font-weight: bold;">class</span> <span style="color: #ce537a; font-weight: bold;">FirstMessageOption</span><span style="color: #4f97d7;">(</span>id<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Int</span>, body<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">String</span>, timestamp<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">UTCTime</span><span style="color: #4f97d7;">)</span> 
+  <span style="color: #4f97d7; font-weight: bold;">extends</span> <span style="color: #ce537a; font-weight: bold;">IncomingMessage</span>
+<span style="color: #4f97d7;">final</span> <span style="color: #4f97d7; font-weight: bold;">case</span> <span style="color: #4f97d7; font-weight: bold;">class</span> <span style="color: #ce537a; font-weight: bold;">AnotherMessageOption</span><span style="color: #4f97d7;">(</span>id<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Int</span>, body<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">StructuredData</span><span style="color: #4f97d7;">)</span>
+  <span style="color: #4f97d7; font-weight: bold;">extends</span> <span style="color: #ce537a; font-weight: bold;">IncomingMessage</span>
+
+<span style="color: #4f97d7; font-weight: bold;">def</span> <span style="color: #bc6ec5; font-weight: bold;">processMessage</span><span style="color: #4f97d7;">(</span>incomingMessage<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">IncomingMessage</span><span style="color: #4f97d7;">)(</span><span style="color: #4f97d7;">implicit</span> logger<span style="color: #4f97d7; font-weight: bold;">:</span> <span style="color: #ce537a; font-weight: bold;">Logger</span><span style="color: #4f97d7;">)</span> <span style="color: #4f97d7; font-weight: bold;">=</span> <span style="color: #4f97d7;">{</span>
+  logger.debug<span style="color: #bc6ec5;">(</span>s<span style="color: #2d9574;">"Got a message with id: </span><span style="color: #7590db;">${incomingMessage.id}</span><span style="color: #2d9574;">"</span><span style="color: #bc6ec5;">)</span>
+
+  incomingMessage <span style="color: #4f97d7; font-weight: bold;">match</span> <span style="color: #bc6ec5;">{</span>
+    <span style="color: #4f97d7; font-weight: bold;">case</span> <span style="color: #ce537a; font-weight: bold;">FirstMessageOption</span><span style="color: #2d9574;">(</span><span style="color: #7590db;">id</span>, <span style="color: #7590db;">body</span>, <span style="color: #7590db;">timestamp</span><span style="color: #2d9574;">)</span> <span style="color: #4f97d7; font-weight: bold;">=&gt;</span> ???
+    <span style="color: #4f97d7; font-weight: bold;">case</span> <span style="color: #ce537a; font-weight: bold;">AnotherMessageOption</span><span style="color: #2d9574;">(</span><span style="color: #7590db;">id</span>, <span style="color: #7590db;">body</span><span style="color: #2d9574;">)</span> <span style="color: #4f97d7; font-weight: bold;">=&gt;</span> ???
+  <span style="color: #bc6ec5;">}</span>
+<span style="color: #4f97d7;">}</span>
+</pre>
+</div>
+<aside class="notes">
+<p>
+In this example we're taking advantage of pattern matching, which scala will check that we've covered all cases for. 
+</p>
+
+<p>
+The case class statement is just a way of creating a class which has a few default things implemented, like structural comparison instead of comparison by reference.
+</p>
+
+<p>
+The arguments to the class constructor are all values available on the class, and the `id` argument satisfies the requirements for <code>id</code> on <code>IncomingMessage</code>.
+</p>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org2e05bd0">
+<h2 id="org2e05bd0">Questions</h2>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/lib/js/head.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: true,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'Slide', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.7.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>
